@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Crypto Portfolio AI{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <!-- Hero Section -->
+    <div class="gradient-bg rounded-lg shadow-xl p-8 mb-8">
+        <div class="text-center text-white">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-robot mr-3"></i>
+                AI-Powered Cryptocurrency Analytics
+            </h1>
+            <p class="text-xl mb-6">
+                Advanced machine learning algorithms for crypto market analysis, whale detection, and sentiment analysis
+            </p>
+            <div class="flex justify-center space-x-4">
+                <a href="/coins" class="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                    <i class="fas fa-chart-bar mr-2"></i>View Analytics
+                </a>
+                <a href="/whale" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition duration-300">
+                    <i class="fas fa-fish mr-2"></i>Whale Detection
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Crypto Analytics -->
+        <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+            <div class="text-center">
+                <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Crypto Analytics</h3>
+                <p class="text-gray-600 mb-4">
+                    Real-time cryptocurrency price tracking with interactive charts and market analysis
+                </p>
+                <a href="/coins" class="text-blue-600 hover:text-blue-800 font-medium">
+                    Explore Coins <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- AI News Monitoring -->
+        <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+            <div class="text-center">
+                <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-newspaper text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">AI News Analysis</h3>
+                <p class="text-gray-600 mb-4">
+                    Natural language processing for sentiment analysis and market prediction
+                </p>
+                <a href="/news" class="text-green-600 hover:text-green-800 font-medium">
+                    View News <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Whale Detection -->
+        <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+            <div class="text-center">
+                <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-fish text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Whale Detection</h3>
+                <p class="text-gray-600 mb-4">
+                    Advanced algorithms to detect large trades and simulate trading strategies
+                </p>
+                <a href="/whale" class="text-purple-600 hover:text-purple-800 font-medium">
+                    Detect Whales <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-coins text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Tracked Coins</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="tracked-coins">10</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-chart-bar text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">AI Predictions</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="ai-predictions">85%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-fish text-purple-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Whale Events</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="whale-events">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-yellow-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-dollar-sign text-yellow-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Portfolio Value</p>
+                    <p class="text-2xl font-semibold text-gray-900" id="portfolio-value">$10,000</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-6">
+            <i class="fas fa-clock mr-2"></i>
+            Recent Activity
+        </h2>
+        <div id="recent-activity" class="space-y-4">
+            <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                <div class="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center">
+                    <i class="fas fa-chart-line text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="font-medium">System initialized</p>
+                    <p class="text-sm text-gray-600">AI algorithms loaded and ready for analysis</p>
+                </div>
+                <div class="ml-auto text-sm text-gray-500">
+                    Just now
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load dashboard data
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDashboardData();
+    });
+
+    function loadDashboardData() {
+        // Load portfolio status
+        fetch('/api/portfolio/status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('portfolio-value').textContent = 
+                    '$' + data.balance.toLocaleString();
+            })
+            .catch(error => console.error('Error loading portfolio:', error));
+
+        // Load whale events count
+        fetch('/api/whale/detect')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('whale-events').textContent = 
+                    data.detection_summary.total_events;
+            })
+            .catch(error => console.error('Error loading whale data:', error));
+    }
+</script>
+{% endblock %}

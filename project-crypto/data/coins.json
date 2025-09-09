@@ -1,0 +1,10 @@
+{
+  "coins": [
+    {"symbol": "BTC", "name": "Bitcoin", "price": 45000, "market_cap": 850000000000, "volume": 25000000000, "logo": "btc.png"},
+    {"symbol": "ETH", "name": "Ethereum", "price": 3200, "market_cap": 385000000000, "volume": 15000000000, "logo": "eth.png"},
+    {"symbol": "SOL", "name": "Solana", "price": 95, "market_cap": 40000000000, "volume": 2000000000, "logo": "sol.png"},
+    {"symbol": "ADA", "name": "Cardano", "price": 0.45, "market_cap": 16000000000, "volume": 1200000000, "logo": "ada.png"}
+  ]
+}
+
+

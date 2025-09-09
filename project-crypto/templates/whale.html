@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}Whale Detection & Trading Simulation{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            <i class="fas fa-fish mr-3"></i>
+            Whale Detection & AI Trading Simulation
+        </h1>
+        <p class="text-gray-600">
+            Advanced algorithms detect large cryptocurrency trades and simulate AI-powered trading strategies
+        </p>
+    </div>
+
+    <!-- Portfolio Status -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-wallet text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Portfolio Balance</p>
+                    <p id="portfolio-balance" class="text-2xl font-semibold text-gray-900">$10,000</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-chart-line text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Return</p>
+                    <p id="total-return" class="text-2xl font-semibold text-gray-900">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-exchange-alt text-purple-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Trades</p>
+                    <p id="total-trades" class="text-2xl font-semibold text-gray-900">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-yellow-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-trophy text-yellow-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Win Rate</p>
+                    <p id="win-rate" class="text-2xl font-semibold text-gray-900">0%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Whale Predictions -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">
+            <i class="fas fa-crystal-ball mr-2"></i>
+            Whale Activity Predictions
+        </h2>
+        <div id="whale-predictions" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Predictions will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">
+                    <i class="fas fa-cogs mr-2"></i>
+                    Trading Controls
+                </h2>
+                <p class="text-gray-600">Select coin and investment, then run AI trading based on whale detection</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Coin</label>
+                    <select id="coin-select" class="border rounded px-3 py-2">
+                        <option value="BTC">BTC</option>
+                        <option value="ETH">ETH</option>
+                        <option value="SOL">SOL</option>
+                        <option value="ADA">ADA</option>
+                        <option value="XRP">XRP</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Invest Amount (USD)</label>
+                    <input id="invest-amount" type="number" min="1" value="5000" class="border rounded px-3 py-2 w-40" />
+                </div>
+                <button onclick="runSimulation()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-play mr-2"></i>
+                    Run Simulation
+                </button>
+                <button onclick="resetPortfolio()" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-300">
+                    <i class="fas fa-refresh mr-2"></i>
+                    Reset Portfolio
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Whale Events -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Whale Detection Results -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-search mr-2"></i>
+                Whale Detection Results
+            </h2>
+            
+            <div id="whale-summary" class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-600">Total Events</p>
+                    <p id="total-events" class="text-2xl font-bold text-gray-900">0</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-600">High Severity</p>
+                    <p id="high-severity" class="text-2xl font-bold text-red-600">0</p>
+                </div>
+            </div>
+
+            <div id="whale-events" class="space-y-4 max-h-96 overflow-y-auto">
+                <!-- Whale events will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Trading History -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-history mr-2"></i>
+                Trading History
+            </h2>
+            
+            <div id="trading-history" class="space-y-4 max-h-96 overflow-y-auto">
+                <!-- Trading history will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Removed Equity Chart per request -->
+
+    <!-- Loading State -->
+    <div id="loading-state" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <i class="fas fa-spinner fa-spin text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mt-2">Running AI Simulation</h3>
+                <p class="text-sm text-gray-500 mt-1">Analyzing whale events and executing trades...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let equityChart = null; // no chart now
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPortfolioStatus();
+        loadWhaleEvents();
+    });
+
+    function loadPortfolioStatus() {
+        fetch('/api/portfolio/status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('portfolio-balance').textContent = 
+                    '$' + data.balance.toLocaleString();
+                
+                // Calculate total return
+                const initialBalance = 10000;
+                const totalReturn = ((data.balance - initialBalance) / initialBalance * 100).toFixed(2);
+                const returnElement = document.getElementById('total-return');
+                returnElement.textContent = totalReturn + '%';
+                returnElement.className = totalReturn >= 0 ? 
+                    'text-2xl font-semibold text-green-600' : 
+                    'text-2xl font-semibold text-red-600';
+                
+                document.getElementById('total-trades').textContent = data.trades.length;
+
+                // Show realized profit if provided
+                if (typeof data.realized_profit === 'number' || (data.portfolio_state && typeof data.portfolio_state.realized_profit === 'number')) {
+                    const realized = (typeof data.realized_profit === 'number') ? data.realized_profit : data.portfolio_state.realized_profit;
+                    const prEl = document.getElementById('total-return');
+                    // Keep total return metric but could add separate profit display if desired
+                }
+                
+                // Calculate win rate from realized P&L
+                const completedTrades = data.trades.filter(trade => trade.action === 'SELL');
+                const winningTrades = completedTrades.filter(trade => typeof trade.pnl === 'number' && trade.pnl > 0);
+                const winRate = completedTrades.length > 0 ? 
+                    (winningTrades.length / completedTrades.length * 100).toFixed(1) : 0;
+                document.getElementById('win-rate').textContent = winRate + '%';
+            })
+            .catch(error => console.error('Error loading portfolio status:', error));
+    }
+
+    function loadWhaleEvents() {
+        fetch('/api/whale/detect')
+            .then(response => response.json())
+            .then(data => {
+                displayWhaleEvents(data);
+            })
+            .catch(error => console.error('Error loading whale events:', error));
+    }
+
+    function displayWhaleEvents(data) {
+        // Update summary
+        document.getElementById('total-events').textContent = data.detection_summary.total_events;
+        document.getElementById('high-severity').textContent = data.detection_summary.high_severity;
+
+        // Display predictions
+        if (data.predictions) {
+            displayWhalePredictions(data.predictions);
+        }
+
+        // Display events
+        const container = document.getElementById('whale-events');
+        container.innerHTML = '';
+
+        if (data.events.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">No whale events detected</p>';
+            return;
+        }
+
+        data.events.forEach(event => {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'border border-gray-200 rounded-lg p-4';
+            
+            const severityClass = event.severity === 'High' ? 'text-red-600' : 
+                                event.severity === 'Medium' ? 'text-yellow-600' : 'text-green-600';
+            
+            const typeClass = event.event_type === 'buying' ? 'text-green-600' : 'text-red-600';
+            const typeIcon = event.event_type === 'buying' ? 'fa-arrow-up' : 'fa-arrow-down';
+            
+            eventElement.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center">
+                        <i class="fas ${typeIcon} ${typeClass} mr-2"></i>
+                        <span class="font-semibold ${typeClass}">${event.event_type.toUpperCase()}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="px-2 py-1 bg-gray-100 rounded-full text-xs font-medium ${severityClass}">
+                            ${event.severity}
+                        </span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-gray-600">Price: $${event.price.toLocaleString()}</p>
+                        <p class="text-gray-600">Change: ${event.price_change}%</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Volume Z-Score: ${event.volume_zscore}</p>
+                        <p class="text-gray-600">Confidence: ${(event.confidence * 100).toFixed(1)}%</p>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(eventElement);
+        });
+    }
+
+    function displayWhalePredictions(predictions) {
+        const container = document.getElementById('whale-predictions');
+        container.innerHTML = '';
+
+        // Market Outlook
+        const outlookCard = document.createElement('div');
+        outlookCard.className = 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4';
+        outlookCard.innerHTML = `
+            <div class="flex items-center mb-3">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                <h3 class="font-semibold text-blue-800">Market Outlook</h3>
+            </div>
+            <p class="text-blue-700">${predictions.market_outlook}</p>
+        `;
+        container.appendChild(outlookCard);
+
+        // Price Prediction
+        const priceCard = document.createElement('div');
+        priceCard.className = 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4';
+        priceCard.innerHTML = `
+            <div class="flex items-center mb-3">
+                <i class="fas fa-arrow-trend-up text-green-600 mr-2"></i>
+                <h3 class="font-semibold text-green-800">Price Prediction</h3>
+            </div>
+            <p class="text-green-700">${predictions.price_prediction}</p>
+        `;
+        container.appendChild(priceCard);
+
+        // Volatility Forecast
+        const volatilityCard = document.createElement('div');
+        volatilityCard.className = 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4';
+        volatilityCard.innerHTML = `
+            <div class="flex items-center mb-3">
+                <i class="fas fa-wave-square text-yellow-600 mr-2"></i>
+                <h3 class="font-semibold text-yellow-800">Volatility Forecast</h3>
+            </div>
+            <p class="text-yellow-700">${predictions.volatility_forecast}</p>
+        `;
+        container.appendChild(volatilityCard);
+
+        // Trading Recommendation
+        const tradingCard = document.createElement('div');
+        const recClass = predictions.trading_recommendation.includes('BUY') ? 'from-green-50 to-emerald-50 border-green-200' :
+                        predictions.trading_recommendation.includes('SELL') ? 'from-red-50 to-pink-50 border-red-200' :
+                        'from-gray-50 to-slate-50 border-gray-200';
+        const recTextClass = predictions.trading_recommendation.includes('BUY') ? 'text-green-700' :
+                           predictions.trading_recommendation.includes('SELL') ? 'text-red-700' :
+                           'text-gray-700';
+        const recIconClass = predictions.trading_recommendation.includes('BUY') ? 'text-green-600' :
+                           predictions.trading_recommendation.includes('SELL') ? 'text-red-600' :
+                           'text-gray-600';
+        
+        tradingCard.className = `bg-gradient-to-r ${recClass} border rounded-lg p-4`;
+        tradingCard.innerHTML = `
+            <div class="flex items-center mb-3">
+                <i class="fas fa-hand-holding-dollar ${recIconClass} mr-2"></i>
+                <h3 class="font-semibold ${recTextClass}">Trading Recommendation</h3>
+            </div>
+            <p class="${recTextClass} font-medium">${predictions.trading_recommendation}</p>
+        `;
+        container.appendChild(tradingCard);
+    }
+
+    function runSimulation() {
+        document.getElementById('loading-state').classList.remove('hidden');
+        const coin = document.getElementById('coin-select').value;
+        const amount = parseFloat(document.getElementById('invest-amount').value || '0');
+        const qs = new URLSearchParams({ coin: coin, amount: String(amount) }).toString();
+        fetch('/api/whale/simulate?' + qs)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('loading-state').classList.add('hidden');
+                
+                // Update portfolio status
+                loadPortfolioStatus();
+                
+                // Display trading results
+                displayTradingResults(data);
+                
+                // Refresh whale events with proper structure
+                loadWhaleEvents();
+            })
+            .catch(error => {
+                document.getElementById('loading-state').classList.add('hidden');
+                console.error('Error running simulation:', error);
+                alert('Error running simulation. Please try again.');
+            });
+    }
+
+    function displayTradingResults(data) {
+        const container = document.getElementById('trading-history');
+        container.innerHTML = '';
+
+        if (data.trades.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">No trades executed</p>';
+            return;
+        }
+
+        data.trades.forEach(trade => {
+            const tradeElement = document.createElement('div');
+            tradeElement.className = 'border border-gray-200 rounded-lg p-4';
+            
+            const actionClass = trade.action === 'BUY' ? 'text-green-600' : 'text-red-600';
+            const actionIcon = trade.action === 'BUY' ? 'fa-arrow-up' : 'fa-arrow-down';
+            
+            tradeElement.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center">
+                        <i class="fas ${actionIcon} ${actionClass} mr-2"></i>
+                        <span class="font-semibold ${actionClass}">${trade.action}</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold">$${trade.price.toLocaleString()}</p>
+                        <p class="text-sm text-gray-600">${formatTimestamp(trade.timestamp)}</p>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <p>Quantity: ${trade.quantity.toFixed(6)} ${trade.symbol ? trade.symbol : 'BTC'}</p>
+                    <p>Amount: $${trade.amount.toLocaleString()}</p>
+                    ${typeof trade.pnl === 'number' ? `<p class="mt-1 ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}">P&L: $${trade.pnl.toFixed(2)}</p>` : ''}
+                    <p class="mt-2 text-xs">${trade.reason}</p>
+                </div>
+            `;
+            
+            container.appendChild(tradeElement);
+        });
+    }
+
+    // removed updateEquityChart
+
+    function resetPortfolio() {
+        if (confirm('Are you sure you want to reset the portfolio? This will clear all trading history.')) {
+            fetch('/api/portfolio/reset')
+                .then(response => response.json())
+                .then(data => {
+                    loadPortfolioStatus();
+                    document.getElementById('trading-history').innerHTML = 
+                        '<p class="text-gray-500 text-center py-8">No trades executed</p>';
+                    document.getElementById('whale-events').innerHTML = 
+                        '<p class="text-gray-500 text-center py-8">No whale events detected</p>';
+                    
+                    if (equityChart) {
+                        equityChart.destroy();
+                        equityChart = null;
+                    }
+                })
+                .catch(error => console.error('Error resetting portfolio:', error));
+        }
+    }
+
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleString();
+    }
+</script>
+{% endblock %}

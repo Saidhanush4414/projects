@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}AI News Monitoring - Sentiment Analysis{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            <i class="fas fa-newspaper mr-3"></i>
+            AI News Monitoring & Sentiment Analysis
+        </h1>
+        <p class="text-gray-600">
+            Real-time cryptocurrency news analysis with AI-powered sentiment detection and market predictions
+        </p>
+    </div>
+
+
+    <!-- Sentiment Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-thumbs-up text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Positive News</p>
+                    <p id="positive-count" class="text-2xl font-semibold text-green-600">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-red-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-thumbs-down text-red-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Negative News</p>
+                    <p id="negative-count" class="text-2xl font-semibold text-red-600">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center">
+                    <i class="fas fa-minus text-gray-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Neutral News</p>
+                    <p id="neutral-count" class="text-2xl font-semibold text-gray-600">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Articles -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+                <i class="fas fa-list mr-2"></i>
+                Latest News Analysis
+            </h2>
+            <button onclick="refreshNews()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Refresh
+            </button>
+        </div>
+
+        <div id="news-container" class="space-y-6">
+            <!-- News articles will be loaded here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="news-loading" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p class="mt-4 text-gray-600">Analyzing news with AI...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNewsData();
+    });
+
+    function loadNewsData() {
+        fetch('/api/news')
+            .then(response => response.json())
+            .then(data => {
+                displayNewsData(data);
+                document.getElementById('news-loading').classList.add('hidden');
+            })
+            .catch(error => {
+                console.error('Error loading news data:', error);
+                document.getElementById('news-loading').innerHTML = 
+                    '<p class="text-red-600">Error loading news. Please try again.</p>';
+            });
+    }
+
+    function displayNewsData(data) {
+        // Update sentiment counts
+        document.getElementById('positive-count').textContent = data.sentiment_summary.positive;
+        document.getElementById('negative-count').textContent = data.sentiment_summary.negative;
+        document.getElementById('neutral-count').textContent = data.sentiment_summary.neutral;
+
+        // Display news articles
+        displayNewsArticles(data.news);
+    }
+
+    function displayNewsArticles(news) {
+        const container = document.getElementById('news-container');
+        container.innerHTML = '';
+
+        news.forEach(article => {
+            const sentimentClass = 'text-gray-600';
+            const sentimentIcon = 'fas fa-info-circle';
+            
+            const articleElement = document.createElement('div');
+            articleElement.className = 'border border-gray-200 rounded-lg p-6 hover:shadow-md transition duration-300';
+            
+            articleElement.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                            <i class="fas fa-coins text-gray-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">${article.coin}</h3>
+                            <p class="text-sm text-gray-600">${article.source}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="flex items-center ${sentimentClass} mb-1">
+                            <i class="${sentimentIcon} mr-1"></i>
+                            <span class="font-semibold">AI insight</span>
+                        </div>
+                        <p class="text-xs text-gray-500">${formatTimestamp(article.timestamp)}</p>
+                    </div>
+                </div>
+                
+                <h4 class="text-lg font-semibold text-gray-900 mb-2">${article.title}</h4>
+                <p class="text-gray-600 mb-4">${article.content}</p>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <span><i class="fas fa-clock mr-1"></i>${formatTimestamp(article.timestamp)}</span>
+                        <span><i class="fas fa-tag mr-1"></i>${article.coin}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-gray-100 rounded-full text-xs font-medium">
+                            AI Analyzed
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(articleElement);
+        });
+    }
+
+    function getSentimentClass(sentiment) {
+        switch(sentiment) {
+            case 'positive': return 'sentiment-positive';
+            case 'negative': return 'sentiment-negative';
+            default: return 'sentiment-neutral';
+        }
+    }
+
+    function getSentimentIcon(sentiment) {
+        switch(sentiment) {
+            case 'positive': return 'fas fa-thumbs-up';
+            case 'negative': return 'fas fa-thumbs-down';
+            default: return 'fas fa-minus';
+        }
+    }
+
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 3600000) { // Less than 1 hour
+            return Math.floor(diff / 60000) + ' minutes ago';
+        } else if (diff < 86400000) { // Less than 1 day
+            return Math.floor(diff / 3600000) + ' hours ago';
+        } else {
+            return Math.floor(diff / 86400000) + ' days ago';
+        }
+    }
+
+
+    function refreshNews() {
+        document.getElementById('news-loading').classList.remove('hidden');
+        document.getElementById('news-container').innerHTML = '';
+        loadNewsData();
+    }
+</script>
+{% endblock %}

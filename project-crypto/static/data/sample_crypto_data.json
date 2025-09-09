@@ -1,0 +1,47 @@
+{
+  "cryptocurrencies": [
+    {
+      "symbol": "BTC",
+      "name": "Bitcoin",
+      "price": 45000,
+      "change_24h": 2.5,
+      "volume": 25000000000,
+      "market_cap": 850000000000
+    },
+    {
+      "symbol": "ETH",
+      "name": "Ethereum",
+      "price": 3200,
+      "change_24h": -1.2,
+      "volume": 15000000000,
+      "market_cap": 385000000000
+    },
+    {
+      "symbol": "SOL",
+      "name": "Solana",
+      "price": 95,
+      "change_24h": 5.8,
+      "volume": 2000000000,
+      "market_cap": 40000000000
+    }
+  ],
+  "news": [
+    {
+      "title": "Bitcoin reaches new institutional adoption milestone",
+      "content": "Major financial institutions continue to adopt Bitcoin as a store of value...",
+      "sentiment": "positive",
+      "coin": "Bitcoin",
+      "timestamp": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "whale_events": [
+    {
+      "timestamp": "2024-01-15T14:20:00Z",
+      "price": 45150,
+      "volume": 1500000,
+      "event_type": "buying",
+      "severity": "High",
+      "confidence": 0.85
+    }
+  ]
+}

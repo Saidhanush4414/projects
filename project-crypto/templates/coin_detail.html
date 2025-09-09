@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}{{ symbol }} - Coin Details{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                <span class="bg-gray-200 rounded-full w-12 h-12 mr-3 flex items-center justify-center overflow-hidden">
+                    <img id="coin-icon" src="" alt="{{ symbol }}" class="w-10 h-10 object-contain">
+                </span>
+                <span id="coin-name">{{ symbol }}</span> (<span id="coin-symbol">{{ symbol }}</span>)
+            </h1>
+            <p class="text-gray-600">Detailed market data and price chart</p>
+        </div>
+        <a href="/coins" class="text-blue-600 hover:underline">← Back to All Coins</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="text-3xl font-bold text-gray-900" id="coin-price">--</div>
+                <div class="text-lg" id="coin-change">--</div>
+            </div>
+            <div class="relative h-96">
+                <canvas id="price-chart"></canvas>
+            </div>
+        </div>
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-semibold text-gray-800 mb-4">Market Stats</h3>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-gray-500">Market Cap</dt>
+                        <dd class="text-xl font-semibold" id="coin-marketcap">--</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500">24h Volume</dt>
+                        <dd class="text-xl font-semibold" id="coin-volume">--</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coin News Section -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+                <i class="fas fa-newspaper mr-2"></i>
+                <span id="coin-news-title">{{ symbol }} News</span>
+            </h2>
+            <button onclick="refreshCoinNews()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-sync-alt mr-2"></i>
+                Refresh News
+            </button>
+        </div>
+        <div id="coin-news-container" class="space-y-4">
+            <!-- Coin-specific news will be loaded here -->
+        </div>
+        <div id="coin-news-loading" class="text-center py-8">
+            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <p class="mt-2 text-gray-600">Loading news...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const symbol = '{{ symbol }}';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCoin();
+        loadChart();
+        loadCoinNews();
+    });
+
+    function loadCoin() {
+        fetch('/api/crypto/prices')
+            .then(r => r.json())
+            .then(list => {
+                const coin = list.find(c => (c.symbol || '').toUpperCase() === symbol);
+                if (!coin) return;
+                document.getElementById('coin-name').textContent = coin.name || symbol;
+                document.getElementById('coin-symbol').textContent = (coin.symbol || symbol).toUpperCase();
+                document.getElementById('coin-icon').src = coin.logo || '/static/img/coin-fallback.svg';
+                document.getElementById('coin-price').textContent = '$' + Number(coin.price || 0).toLocaleString();
+                const change = Number(coin.change_24h || 0);
+                const cls = change >= 0 ? 'text-green-600' : 'text-red-600';
+                const icon = change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                document.getElementById('coin-change').innerHTML = `<span class="${cls}"><i class="fas ${icon} mr-1"></i>${change.toFixed(2)}%</span>`;
+                document.getElementById('coin-marketcap').textContent = coin.market_cap ? ('$' + Number(coin.market_cap).toLocaleString()) : '--';
+                document.getElementById('coin-volume').textContent = coin.volume ? ('$' + Number(coin.volume).toLocaleString()) : '--';
+            })
+            .catch(console.error);
+    }
+
+    let priceChart = null;
+    function loadChart() {
+        fetch(`/api/crypto/chart/${symbol}?days=60`)
+            .then(r => r.json())
+            .then(chartData => {
+                const ctx = document.getElementById('price-chart').getContext('2d');
+                if (priceChart) priceChart.destroy();
+                priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        interaction: { intersect: false, mode: 'index' },
+                        scales: { y: { beginAtZero: false } }
+                    }
+                });
+            })
+            .catch(console.error);
+    }
+
+    function loadCoinNews() {
+        fetch(`/api/news?coin=${symbol}`)
+            .then(r => r.json())
+            .then(data => {
+                displayCoinNews(data.news || []);
+                document.getElementById('coin-news-loading').classList.add('hidden');
+            })
+            .catch(err => {
+                console.error('Error loading coin news:', err);
+                document.getElementById('coin-news-loading').innerHTML = '<p class="text-red-600">Error loading news</p>';
+            });
+    }
+
+    function displayCoinNews(news) {
+        const container = document.getElementById('coin-news-container');
+        container.innerHTML = '';
+
+        if (news.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">No news available for this coin.</p>';
+            return;
+        }
+
+        news.slice(0, 10).forEach(article => {
+            const sentimentClass = article.sentiment === 'positive' ? 'text-green-600' : 
+                                 article.sentiment === 'negative' ? 'text-red-600' : 'text-gray-600';
+            const sentimentIcon = article.sentiment === 'positive' ? 'fa-thumbs-up' : 
+                                article.sentiment === 'negative' ? 'fa-thumbs-down' : 'fa-info-circle';
+
+            const articleElement = document.createElement('div');
+            articleElement.className = 'border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-300';
+            
+            articleElement.innerHTML = `
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center">
+                        <div class="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                            <i class="fas fa-coins text-gray-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900">${article.title}</h4>
+                            <p class="text-sm text-gray-600">${article.source} • ${formatTimestamp(article.timestamp)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center ${sentimentClass}">
+                        <i class="${sentimentIcon} mr-1"></i>
+                        <span class="text-sm font-medium">${article.sentiment.toUpperCase()}</span>
+                    </div>
+                </div>
+                <p class="text-gray-600 text-sm">${article.content}</p>
+            `;
+            
+            container.appendChild(articleElement);
+        });
+    }
+
+    function refreshCoinNews() {
+        document.getElementById('coin-news-loading').classList.remove('hidden');
+        document.getElementById('coin-news-container').innerHTML = '';
+        loadCoinNews();
+    }
+
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 3600000) {
+            return Math.floor(diff / 60000) + ' minutes ago';
+        } else if (diff < 86400000) {
+            return Math.floor(diff / 3600000) + ' hours ago';
+        } else {
+            return Math.floor(diff / 86400000) + ' days ago';
+        }
+    }
+</script>
+{% endblock %}
+
+
