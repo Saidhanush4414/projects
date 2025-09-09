@@ -1,0 +1,244 @@
+#:kivy 2.2.1
+#:import md_colors kivy.utils
+#:import Window kivy.core.window.Window
+#:import Clock kivy.clock.Clock
+#:import Animation kivy.animation.Animation
+#:import dp kivy.metrics.dp
+
+<ChatBubble>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: max(message_label.height + dp(20), dp(50))
+    padding: dp(15)
+    spacing: dp(10)
+    opacity: 0
+    canvas.before:
+        Color:
+            rgba: (0.15, 0.45, 1, 1) if self.is_user else (0.15, 0.15, 0.18, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(20)]
+    
+    Label:
+        id: message_label
+        text: root.message
+        color: 1, 1, 1, 1
+        size_hint: 1, None
+        height: self.texture_size[1]
+        text_size: self.width - dp(20), None
+        markup: True
+        pos_hint: {'center_y': 0.5}
+        font_size: '16sp'
+        padding: dp(10), dp(5)
+
+<ChatInterface>:
+    orientation: 'vertical'
+    canvas.before:
+        Color:
+            rgba: 0.08, 0.08, 0.1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    # Modern AI Header
+    BoxLayout:
+        size_hint_y: None
+        height: dp(70)
+        padding: dp(15)
+        spacing: dp(15)
+        canvas.before:
+            Color:
+                rgba: 0.1, 0.1, 0.13, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # AI Icon with glow
+        BoxLayout:
+            size_hint_x: None
+            width: dp(45)
+            padding: dp(2)
+            canvas.before:
+                Color:
+                    rgba: 0.15, 0.45, 1, 0.1
+                RoundedRectangle:
+                    pos: self.x - dp(2), self.y - dp(2)
+                    size: self.width + dp(4), self.height + dp(4)
+                    radius: [dp(15)]
+                Color:
+                    rgba: 0.15, 0.45, 1, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(15)]
+
+            Label:
+                text: "AI"
+                font_size: '20sp'
+                bold: True
+                color: 1, 1, 1, 1
+
+        # Title with subtitle
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 0
+            spacing: dp(2)
+            size_hint_x: 0.8
+
+            Label:
+                text: "KnowBot"
+                font_size: '24sp'
+                color: 1, 1, 1, 1
+                bold: True
+                size_hint_y: None
+                height: self.texture_size[1]
+                halign: 'left'
+                text_size: self.width, None
+
+            Label:
+                text: "AI Knowledge Assistant"
+                font_size: '14sp'
+                color: 0.6, 0.6, 0.65, 1
+                size_hint_y: None
+                height: self.texture_size[1]
+                halign: 'left'
+                text_size: self.width, None
+
+        # Status indicator
+        BoxLayout:
+            size_hint_x: None
+            width: dp(80)
+            canvas.before:
+                Color:
+                    rgba: 0.15, 0.15, 0.18, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(15)]
+            
+            Label:
+                text: "●  Online"
+                font_size: '14sp'
+                bold: True
+                color: 0.2, 0.8, 0.4, 1
+
+    # Chat area with improved styling
+    ScrollView:
+        id: chat_scroll
+        do_scroll_x: False
+        effect_cls: "ScrollEffect"
+        bar_width: dp(5)
+        bar_color: 0.3, 0.3, 0.35, 0.8
+        bar_inactive_color: 0.3, 0.3, 0.35, 0.2
+        scroll_type: ['bars', 'content']
+
+        BoxLayout:
+            id: chat_layout
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            padding: dp(20)
+            spacing: dp(20)
+
+    # Modern input area
+    BoxLayout:
+        size_hint_y: None
+        height: dp(80)
+        padding: dp(15)
+        spacing: dp(15)
+        canvas.before:
+            Color:
+                rgba: 0.1, 0.1, 0.13, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Enhanced text input
+        BoxLayout:
+            size_hint_x: 0.85
+            canvas.before:
+                Color:
+                    rgba: 0.15, 0.45, 1, 0.1
+                RoundedRectangle:
+                    pos: self.x - dp(1), self.y - dp(1)
+                    size: self.width + dp(2), self.height + dp(2)
+                    radius: [dp(20)]
+                Color:
+                    rgba: 0.15, 0.15, 0.18, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(20)]
+
+            TextInput:
+                id: message_input
+                hint_text: 'Ask anything...'
+                font_size: '16sp'
+                multiline: False
+                padding: [dp(20), dp(15)]
+                cursor_color: 0.15, 0.45, 1, 1
+                foreground_color: 1, 1, 1, 1
+                background_color: 0, 0, 0, 0
+                hint_text_color: 0.4, 0.4, 0.45, 1
+                selection_color: 0.15, 0.45, 1, 0.3
+                on_text_validate: root.send_message()
+
+        # Modern send button with animations
+        Button:
+            id: send_button
+            size_hint_x: None
+            width: dp(50)
+            height: dp(50)
+            background_color: 0, 0, 0, 0
+            on_press: 
+                self.opacity = 0.8
+                send_icon.opacity = 0
+                send_emoji.opacity = 1
+                self.canvas.before.children[0].rgba = (0.1, 0.35, 0.9, 1)
+            on_release: 
+                self.opacity = 1
+                send_icon.opacity = 1
+                send_emoji.opacity = 0
+                self.canvas.before.children[0].rgba = (0.15, 0.45, 1, 1)
+                root.send_message()
+            canvas.before:
+                # Outer glow
+                Color:
+                    rgba: 0.15, 0.45, 1, 0.15
+                RoundedRectangle:
+                    pos: self.x - dp(3), self.y - dp(3)
+                    size: self.width + dp(6), self.height + dp(6)
+                    radius: [dp(25)]
+                # Inner glow
+                Color:
+                    rgba: 0.15, 0.45, 1, 0.2
+                RoundedRectangle:
+                    pos: self.x - dp(1.5), self.y - dp(1.5)
+                    size: self.width + dp(3), self.height + dp(3)
+                    radius: [dp(25)]
+                # Button background
+                Color:
+                    rgba: 0.15, 0.45, 1, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(25)]
+
+            FloatLayout:
+                Label:
+                    id: send_icon
+                    text: "→"
+                    font_size: '24sp'
+                    bold: True
+                    color: 1, 1, 1, 1
+                    center: self.parent.center
+                    size: self.parent.size
+                
+                Label:
+                    id: send_emoji
+                    text: "📤"
+                    font_size: '24sp'
+                    opacity: 0
+                    center: self.parent.center
+                    size: self.parent.size 
